@@ -635,7 +635,7 @@
     <div class="hero-copy fade-up d1">
       <div class="hero-eyebrow">
         <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="#f0883e" opacity="0.7"/><circle cx="4" cy="4" r="1.5" fill="#f0883e"/></svg>
-        macOS menu bar app &nbsp;·&nbsp; 7-day Pro trial included
+        macOS &amp; Windows menu bar app &nbsp;·&nbsp; 7-day Pro trial included
       </div>
 
       <h1>Your day, always<br>one click away</h1>
@@ -659,8 +659,8 @@
           Get Pro - $14.99
         </a>
       </div>
-      <p class="hero-note">Apple Silicon &amp; Intel Mac &nbsp;·&nbsp; macOS 12+ &nbsp;·&nbsp; Instant download</p>
-      <p class="hero-note" style="margin-top:0.35rem;font-size:0.72rem;">
+      <p class="hero-note" id="hero-platform-note">Apple Silicon &amp; Intel Mac &nbsp;·&nbsp; macOS 12+ &nbsp;·&nbsp; Instant download</p>
+      <p class="hero-note" id="hero-intel-fallback" style="margin-top:0.35rem;font-size:0.72rem;">
         Intel Mac not detected? <a href="/download/x64" data-umami-event="hero-download-intel-fallback" style="color:var(--accent);opacity:0.8;">Download Intel build ↓</a>
       </p>
       <p class="hero-guarantee">✓ &nbsp;7-day money-back guarantee &nbsp;&nbsp;·&nbsp;&nbsp; ✓ &nbsp;No account required &nbsp;&nbsp;·&nbsp;&nbsp; ✓ &nbsp;Private by default</p>
@@ -1127,12 +1127,12 @@
       <a href="/thank-you.html?dmg=/download/arm64"
          class="btn btn-secondary btn-lg"
          data-umami-event="cta-download-free"
-         data-umami-event-arch="arm64">Download Free (Apple Silicon)</a>
+         data-umami-event-arch="arm64">Download Free</a>
       <a href="https://daybar.lemonsqueezy.com/checkout/buy/a3356c2e-e712-4cae-8d3f-73c0c8dee60a"
          class="btn btn-primary btn-lg"
          data-umami-event="cta-get-pro">Get Pro - $14.99</a>
     </div>
-    <p class="cta-note">Apple Silicon &amp; Intel Mac &nbsp;·&nbsp; macOS 12+ &nbsp;·&nbsp; Instant download</p>
+    <p class="cta-note" id="cta-platform-note">Apple Silicon &amp; Intel Mac &nbsp;·&nbsp; macOS 12+ &nbsp;·&nbsp; Instant download</p>
   </div>
 </section>
 
@@ -1195,15 +1195,44 @@
   // Downloads proxy through Netlify functions → private GitHub releases.
   // Always serves the latest release — no need to update URLs per version.
   (function () {
-    var ARM64_DMG = '/download/arm64';
-    var X64_DMG   = '/download/x64';
+    var ARM64_DMG  = '/download/arm64';
+    var X64_DMG    = '/download/x64';
+    var WINDOWS_EXE = '/download/windows';
 
-    var isMac = /Mac/.test(navigator.platform) || /Mac OS X/.test(navigator.userAgent);
+    var ua       = navigator.userAgent;
+    var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
+    var isMac    = /Mac/.test(platform) || /Mac OS X/.test(ua);
+    var isWin    = /Win/.test(platform) || /Windows/.test(ua);
 
-    // Non-Mac visitors: disable all download CTAs
+    // ── Windows visitors: swap all download CTAs to the Windows installer ──
+    if (isWin) {
+      document.querySelectorAll('a[data-umami-event*="download-free"]').forEach(function (a) {
+        var href = a.getAttribute('href') || '';
+        if (href.indexOf('thank-you.html') !== -1) {
+          var url = new URL(href, window.location.origin);
+          url.searchParams.set('dmg', WINDOWS_EXE);
+          a.setAttribute('href', url.pathname + url.search);
+        } else if (href === ARM64_DMG || href === X64_DMG) {
+          a.setAttribute('href', WINDOWS_EXE);
+        }
+        a.textContent = a.textContent.replace(/Download Free.*/, 'Download Free (7-Day Pro Trial)');
+        a.setAttribute('data-umami-event-arch', 'windows');
+      });
+      // Update platform notes
+      var heroNote = document.getElementById('hero-platform-note');
+      if (heroNote) heroNote.textContent = 'Windows 10+ · 64-bit · Instant download';
+      var ctaNote = document.getElementById('cta-platform-note');
+      if (ctaNote) ctaNote.textContent = 'Windows 10+ · 64-bit · Instant download';
+      // Hide the macOS Intel fallback link
+      var intelFallback = document.getElementById('hero-intel-fallback');
+      if (intelFallback) intelFallback.style.display = 'none';
+      return;
+    }
+
+    // ── Non-Mac, non-Windows: show a generic disabled state ───────────────
     if (!isMac) {
       document.querySelectorAll('a[data-umami-event*="download-free"]').forEach(function (a) {
-        a.textContent = 'macOS Only 🍎';
+        a.textContent = 'macOS & Windows only';
         a.style.opacity = '0.6';
         a.style.pointerEvents = 'none';
         a.removeAttribute('href');
@@ -1211,7 +1240,7 @@
       return;
     }
 
-    // Detect architecture. Returns 'intel', 'arm64', or null (unknown).
+    // ── Mac visitors: detect Apple Silicon vs Intel ────────────────────────
     // Method 1: userAgentData (Chrome/Edge) — reliable, no privacy restrictions
     // Method 2: WebGL renderer — works in Safari, may be blocked in Firefox
     function detectArch(callback) {
@@ -1255,9 +1284,8 @@
         a.setAttribute('data-umami-event-arch', 'x64');
       });
       // Hide the manual Intel fallback link — auto-detection worked
-      document.querySelectorAll('[data-umami-event="hero-download-intel-fallback"]').forEach(function (el) {
-        el.parentElement.style.display = 'none';
-      });
+      var intelFallback = document.getElementById('hero-intel-fallback');
+      if (intelFallback) intelFallback.style.display = 'none';
     }
 
     detectArch(function (arch) {

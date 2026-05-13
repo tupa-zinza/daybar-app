@@ -5,7 +5,7 @@
 [functions]
   node_bundler = "esbuild"
 
-# ── Download proxy — serves DMGs from private GitHub releases ──
+# ── Download proxy — serves installers from private GitHub releases ──
 [[redirects]]
   from   = "/download/arm64"
   to     = "/.netlify/functions/download"
@@ -13,6 +13,11 @@
 
 [[redirects]]
   from   = "/download/x64"
+  to     = "/.netlify/functions/download"
+  status = 200
+
+[[redirects]]
+  from   = "/download/windows"
   to     = "/.netlify/functions/download"
   status = 200
 

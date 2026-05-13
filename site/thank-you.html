@@ -154,7 +154,8 @@
      If it doesn't, <a id="manual-dl" href="#">click here to download manually</a>.
    </p>
    
-   <div class="setup-card">
+   <!-- macOS install steps (default) -->
+   <div class="setup-card" id="steps-mac">
      <h3>Installation Steps</h3>
 
      <div class="setup-step">
@@ -180,7 +181,35 @@
          <p>Click the Daybar icon in your macOS menu bar at the top right of your screen. Your 7-Day Pro Trial is automatically active!</p>
        </div>
      </div>
+   </div>
 
+   <!-- Windows install steps (shown for Windows downloads) -->
+   <div class="setup-card" id="steps-windows" style="display:none">
+     <h3>Installation Steps</h3>
+
+     <div class="setup-step">
+       <div class="step-num">1</div>
+       <div class="step-content">
+         <strong>Run the installer</strong>
+         <p>Double-click the downloaded <code>.exe</code> file. If Windows SmartScreen appears, click <em>More info</em> → <em>Run anyway</em>.</p>
+       </div>
+     </div>
+
+     <div class="setup-step">
+       <div class="step-num">2</div>
+       <div class="step-content">
+         <strong>Complete the setup wizard</strong>
+         <p>Follow the installer prompts. Daybar will launch automatically when the installation finishes.</p>
+       </div>
+     </div>
+
+     <div class="setup-step">
+       <div class="step-num">3</div>
+       <div class="step-content">
+         <strong>Find Daybar in your taskbar</strong>
+         <p>Click the Daybar icon in the Windows system tray (bottom-right). Your 7-Day Pro Trial is automatically active!</p>
+       </div>
+     </div>
    </div>
 </section>
 
@@ -188,8 +217,14 @@
   window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
     const dmgUrl = urlParams.get('dmg') || '/download/arm64';
-    
+    const isWindows = dmgUrl.includes('windows');
+
     document.getElementById('manual-dl').href = dmgUrl;
+
+    if (isWindows) {
+      document.getElementById('steps-mac').style.display = 'none';
+      document.getElementById('steps-windows').style.display = '';
+    }
 
     // Trigger download automatically
     setTimeout(() => {
