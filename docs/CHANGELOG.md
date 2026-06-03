@@ -4,6 +4,13 @@ All notable changes to Daybar are documented here.
 
 ---
 
+## [1.1.11] — 2026-06-03
+
+### Added
+- **Caffeinate on Launch** — new toggle in Settings → General to automatically keep the display awake every time Daybar starts
+
+---
+
 ## [1.1.5] — 2026-04-19
 
 ### Fixed
